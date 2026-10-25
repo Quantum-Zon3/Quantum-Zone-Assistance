@@ -1,0 +1,920 @@
+{
+  "name": "Quantum Zone Assistens Principal",
+  "nodes": [
+    {
+      "parameters": {
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Bienvenido ¿Qué desea hacer?",
+              "fieldType": "checkbox",
+              "fieldOptions": {
+                "values": [
+                  {
+                    "option": "Obtener todos los emails"
+                  },
+                  {
+                    "option": "Obtener emails de hoy"
+                  }
+                ]
+              },
+              "limitSelection": "range",
+              "minSelections": 1
+            },
+            {
+              "fieldLabel": "Cuantos correos desea recibir?",
+              "fieldType": "number",
+              "placeholder": "por defecto: 10"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.form",
+      "typeVersion": 2.5,
+      "position": [
+        -1232,
+        240
+      ],
+      "id": "f4dfc158-f46a-4a6b-a8ab-ba8e51967883",
+      "name": "Form",
+      "webhookId": "6f744caf-c878-4167-bd27-2c7c934ede75"
+    },
+    {
+      "parameters": {
+        "formTitle": "Quantum zone assistens",
+        "formDescription": "Bienvenido querido/a, que deseas hacer?",
+        "formFields": {
+          "values": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.6,
+      "position": [
+        -1472,
+        240
+      ],
+      "id": "1fdfabcf-908e-4d6d-b908-e19ba8ae5632",
+      "name": "On form submission",
+      "webhookId": "98497e97-ad75-4603-a08d-b841b2f9021d"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "e45dff8b-4652-45d5-95bb-01c55aa90d95",
+                    "leftValue": "={{\n  ($json.snippet ?? \"\").toLowerCase().includes(\"adjunto la entrega\") ||\n  ($json.Subject ?? \"\").toLowerCase().includes(\"adjunto la entrega\") ||\n  ($json.snippet ?? \"\").toLowerCase().includes(\"adjunto la evidencia\") ||\n  ($json.Subject ?? \"\").toLowerCase().includes(\"adjunto la evidencia\")\n}}",
+                    "rightValue": "={{ \"Adjunto la evidencia\" || \"Adjunto la entrega\" }}",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "eb179367-afb7-4bfd-b208-90e24acf12cb",
+                    "leftValue": "={{ $json.labels.some(label => label.id === \"IMPORTANT\") }}",
+                    "rightValue": "important",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "cfe029a6-992f-4171-b31a-49a8a3d5e405",
+                    "leftValue": "={{ $json.labels.some(label => label.id === \"SPAM\") }}",
+                    "rightValue": "=spam",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "ignoreCase": true
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -1120,
+        768
+      ],
+      "id": "5ec57b46-aa46-4a2f-883c-a30691d86d23",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": "={{ $if($('Form').item.json['Cuantos correos desea recibir?'] == 0, 10, $('Form').item.json['Cuantos correos desea recibir?']) }}",
+        "filters": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -608,
+        352
+      ],
+      "id": "edfe9ef8-5628-4499-903f-a031a45b7ba1",
+      "name": "Obtener todos los mensajes",
+      "webhookId": "79ca708b-58a7-41ab-a844-e448cfec0a7b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CREDENCIAL_DE_PRUEBA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": "={{ $if($('Form').item.json['Cuantos correos desea recibir?'] == 0, 10, $('Form').item.json['Cuantos correos desea recibir?']) }}",
+        "filters": {
+          "q": "=after:  {{ $json.fechaInicio }} before: {{ $json.fechaFin }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -608,
+        160
+      ],
+      "id": "2c0ac6aa-178a-43f3-8c2a-ddb103dc9470",
+      "name": "Obtener todos los mensajes de hoy",
+      "webhookId": "79ca708b-58a7-41ab-a844-e448cfec0a7b",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CREDENCIAL_DE_PRUEBA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Suponiendo que del formulario recibes una fecha\nconst fechaInput = new Date($input.first().json.fecha_consulta || Date.now());\n\n// Formato requerido por Gmail: YYYY/MM/DD\nconst year = fechaInput.getFullYear();\nconst month = String(fechaInput.getMonth() + 1).padStart(2, '0');\nconst day = String(fechaInput.getDate()).padStart(2, '0');\nconst diaFormateado = `${year}/${month}/${day}`;\n\n// Calcular el día siguiente para el límite superior \"before:\"\nconst mañana = new Date(fechaInput);\nmañana.setDate(mañana.getDate() + 1);\nconst mañanaYear = mañana.getFullYear();\nconst mañanaMonth = String(mañana.getMonth() + 1).padStart(2, '0');\nconst mañanaDay = String(mañana.getDate()).padStart(2, '0');\nconst mañanaFormateado = `${mañanaYear}/${mañanaMonth}/${mañanaDay}`;\n\nreturn {\n  json: {\n    fechaInicio: diaFormateado,\n    fechaFin: mañanaFormateado\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        240
+      ],
+      "id": "ba737aac-f579-4b21-a7fc-c04c361a0b6f",
+      "name": "Obtener fecha de inicio y finalización de hoy "
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "filters": {
+          "includeSpamTrash": true,
+          "sender": "example@gmail.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -1456,
+        800
+      ],
+      "id": "50d46f94-6eb7-46f9-a519-5f9bf786baad",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CREDENCIAL_DE_PRUEBA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $('Form').item.json['Bienvenido ¿Qué desea hacer?'] }}",
+                    "rightValue": "Obtener emails de hoy",
+                    "operator": {
+                      "type": "array",
+                      "operation": "contains",
+                      "rightType": "any"
+                    },
+                    "id": "72bd46c6-35fc-48dd-ae4e-1dcf5c5fcbb5"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "fc3f18de-7804-4069-bb49-bc4293e73c71",
+                    "leftValue": "={{ $('Form').item.json['Bienvenido ¿Qué desea hacer?'] }}",
+                    "rightValue": "Obtener todos los emails",
+                    "operator": {
+                      "type": "array",
+                      "operation": "contains",
+                      "rightType": "any"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "none"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        -864,
+        240
+      ],
+      "id": "c93a9c80-2581-4f78-b3e5-07b17ed76897",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -800,
+        544
+      ],
+      "id": "c1482e05-b4e1-4b68-81e8-15b1dd4033d4",
+      "name": "Obtener mensaje de Adjunto la evidencia",
+      "webhookId": "283be69e-0b76-4e38-b7a3-7448333e2d32",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CREDENCIAL_DE_PRUEBA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Obtener mensaje de Adjunto la evidencia').item.json.id }}",
+        "emailType": "text",
+        "message": "Su mensaje fue recibido y se encuentra en espera a ser leído.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -608,
+        544
+      ],
+      "id": "b4bf3bba-e01f-4ea3-879f-1b80d550c884",
+      "name": "Mensaje automatico de recibido",
+      "webhookId": "56dc7342-e0da-4201-9b66-561636330453",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CREDENCIAL_DE_PRUEBA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -800,
+        720
+      ],
+      "id": "e6d1ca55-0367-4e05-98a1-d3a799c5dd87",
+      "name": "Obtener mensaje importante",
+      "webhookId": "283be69e-0b76-4e38-b7a3-7448333e2d32",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CREDENCIAL_DE_PRUEBA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Obtener mensaje importante').item.json.id }}",
+        "emailType": "text",
+        "message": "El mensaje se guardo como importante, en breve será respondido.",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -608,
+        720
+      ],
+      "id": "d1bc13ac-93b0-4941-9fc1-fa26fd0e1bee",
+      "name": "Mensaje automatico de recibido y importante",
+      "webhookId": "56dc7342-e0da-4201-9b66-561636330453",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CREDENCIAL_DE_PRUEBA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "reply",
+        "messageId": "={{ $('Obtener mensaje de spam').item.json.id }}",
+        "emailType": "text",
+        "message": "No me interesa, muchas gracias",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -608,
+        880
+      ],
+      "id": "2ed7d6c4-cf24-4ccd-a6bb-b3354db258c7",
+      "name": "Mensaje automatico de recibido y spam",
+      "webhookId": "56dc7342-e0da-4201-9b66-561636330453",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CREDENCIAL_DE_PRUEBA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -608,
+        1072
+      ],
+      "id": "50b5c264-67a9-4d17-86cf-a610130a7110",
+      "name": "Obtener un mensaje default",
+      "webhookId": "283be69e-0b76-4e38-b7a3-7448333e2d32",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CREDENCIAL_DE_PRUEBA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "ce179706-5d76-4904-9359-76d838742bdd",
+              "name": "Explicación",
+              "value": "Este tipo de correo no esta contemplado en el workflow",
+              "type": "string"
+            },
+            {
+              "id": "c920a302-9e57-4be0-b54f-27cd760f69af",
+              "name": "De parte de:",
+              "value": "={{ $json.From }}",
+              "type": "string"
+            },
+            {
+              "id": "92c4a2e2-771c-4e09-b91b-356eee425192",
+              "name": "Asunto",
+              "value": "={{ $json.Subject }}",
+              "type": "string"
+            },
+            {
+              "id": "6a07e063-04ea-4d93-be89-76e9d9720c49",
+              "name": "Cuerpo",
+              "value": "={{ $json.snippet }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -800,
+        1072
+      ],
+      "id": "dd561b77-8920-4ed6-99a5-e57346a82255",
+      "name": "Organización de datos"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $('Gmail Trigger').item.json.id }}"
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        -800,
+        880
+      ],
+      "id": "1b6094f5-c46c-4f10-b8ce-b00cc68daacf",
+      "name": "Obtener mensaje de spam",
+      "webhookId": "283be69e-0b76-4e38-b7a3-7448333e2d32",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "CREDENCIAL_DE_PRUEBA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "OnPphkRzJ1s9gJUz",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/OnPphkRzJ1s9gJUz",
+          "cachedResultName": "Quantum Zone Assistance Subworkflow_Proyecto"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        544
+      ],
+      "id": "c3008aed-8679-43a8-801e-5e9557103eba",
+      "name": "Llamado a API Externa"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "OnPphkRzJ1s9gJUz",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/OnPphkRzJ1s9gJUz",
+          "cachedResultName": "Quantum Zone Assistance Subworkflow_Proyecto"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        720
+      ],
+      "id": "5ec8e0c8-603d-4380-bd35-45ad5d12d7af",
+      "name": "Llamado a API Externa2"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "OnPphkRzJ1s9gJUz",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/OnPphkRzJ1s9gJUz",
+          "cachedResultName": "Quantum Zone Assistance Subworkflow_Proyecto"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        1072
+      ],
+      "id": "244017e0-aa95-442e-b70e-ce353a8e3137",
+      "name": "Llamado a API Externa3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "31f978ce-13e2-449f-a62f-d18869f6fede",
+              "name": "remitente",
+              "value": "={{ $('Obtener mensaje de Adjunto la evidencia').item.json.From }}",
+              "type": "string"
+            },
+            {
+              "id": "be7c2b6a-f725-49ad-9f92-bb6945cb4403",
+              "name": "asunto",
+              "value": "={{ $('Obtener mensaje de Adjunto la evidencia').item.json.Subject}}",
+              "type": "string"
+            },
+            {
+              "id": "f58888d1-9be5-43e2-984f-f948f3ab24a7",
+              "name": "resumen",
+              "value": "={{ $('Obtener mensaje de Adjunto la evidencia').item.json.snippet }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -448,
+        544
+      ],
+      "id": "2ff7a2b5-04aa-457a-8694-b0f09faab9e3",
+      "name": "Formato de datos para el Subworkflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "31f978ce-13e2-449f-a62f-d18869f6fede",
+              "name": "remitente",
+              "value": "={{ $('Obtener mensaje de Adjunto la evidencia').item.json.From }}",
+              "type": "string"
+            },
+            {
+              "id": "be7c2b6a-f725-49ad-9f92-bb6945cb4403",
+              "name": "asunto",
+              "value": "={{ $('Obtener mensaje de Adjunto la evidencia').item.json.Subject}}",
+              "type": "string"
+            },
+            {
+              "id": "f58888d1-9be5-43e2-984f-f948f3ab24a7",
+              "name": "resumen",
+              "value": "={{ $('Obtener mensaje de Adjunto la evidencia').item.json.snippet }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -448,
+        720
+      ],
+      "id": "ac745bb2-b1e1-44c9-a454-b02ec90d032a",
+      "name": "Formato de datos para el Subworkflow1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "31f978ce-13e2-449f-a62f-d18869f6fede",
+              "name": "remitente",
+              "value": "={{ $('Obtener mensaje de Adjunto la evidencia').item.json.From }}",
+              "type": "string"
+            },
+            {
+              "id": "be7c2b6a-f725-49ad-9f92-bb6945cb4403",
+              "name": "asunto",
+              "value": "={{ $('Obtener mensaje de Adjunto la evidencia').item.json.Subject}}",
+              "type": "string"
+            },
+            {
+              "id": "f58888d1-9be5-43e2-984f-f948f3ab24a7",
+              "name": "resumen",
+              "value": "={{ $('Obtener mensaje de Adjunto la evidencia').item.json.snippet }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        -448,
+        1072
+      ],
+      "id": "69986316-33ce-478f-8601-4f2658864088",
+      "name": "Formato de datos para el Subworkflow."
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "Form",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Form": {
+      "main": [
+        [
+          {
+            "node": "Obtener fecha de inicio y finalización de hoy ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Obtener mensaje de Adjunto la evidencia",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Obtener mensaje importante",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Obtener mensaje de spam",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Organización de datos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener fecha de inicio y finalización de hoy ": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Obtener todos los mensajes de hoy",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Obtener todos los mensajes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener mensaje de Adjunto la evidencia": {
+      "main": [
+        [
+          {
+            "node": "Mensaje automatico de recibido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener mensaje importante": {
+      "main": [
+        [
+          {
+            "node": "Mensaje automatico de recibido y importante",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Organización de datos": {
+      "main": [
+        [
+          {
+            "node": "Obtener un mensaje default",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener mensaje de spam": {
+      "main": [
+        [
+          {
+            "node": "Mensaje automatico de recibido y spam",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensaje automatico de recibido": {
+      "main": [
+        [
+          {
+            "node": "Formato de datos para el Subworkflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Obtener un mensaje default": {
+      "main": [
+        [
+          {
+            "node": "Formato de datos para el Subworkflow.",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensaje automatico de recibido y spam": {
+      "main": [
+        []
+      ]
+    },
+    "Mensaje automatico de recibido y importante": {
+      "main": [
+        [
+          {
+            "node": "Formato de datos para el Subworkflow1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formato de datos para el Subworkflow": {
+      "main": [
+        [
+          {
+            "node": "Llamado a API Externa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formato de datos para el Subworkflow1": {
+      "main": [
+        [
+          {
+            "node": "Llamado a API Externa2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formato de datos para el Subworkflow.": {
+      "main": [
+        [
+          {
+            "node": "Llamado a API Externa3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "UuySmC8KQYgivEz7",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "80e1e903-4f63-4459-98f6-36f9ed109eeb",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1a29cf9edfb0dc8c57b8b3cde76958d2a1d8641c69707ebd7653253da4d3d62d"
+  },
+  "nodeGroups": [],
+  "id": "HASuhAy4gvCBC61J",
+  "tags": []
+}

@@ -1,0 +1,95 @@
+{
+  "name": "Quantum Zone Assistance Subworkflow_Proyecto",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "proyecto",
+              "value": "Quantum zone assistens Principal"
+            },
+            {
+              "name": "remitente",
+              "value": "={{ $json.remitente || $json['De parte de:'] || 'Remitente no especificado' }}"
+            },
+            {
+              "name": "asunto",
+              "value": "={{ $json.asunto || $json.Asunto || 'Sin Asunto' }}"
+            },
+            {
+              "name": "resumen",
+              "value": "={{ $json.resumen || $json.Cuerpo || 'Sin Cuerpo' }}"
+            },
+            {
+              "name": "fecha_procesado",
+              "value": "={{ $now.toString() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -64,
+        -368
+      ],
+      "id": "57e8c266-1e76-49a5-8178-3c7686c560db",
+      "name": "HTTP Request - Registrar en API Externa"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough",
+        "returnOutput": "allRuns"
+      },
+      "id": "5d5e55f3-81f8-46c4-b5d0-7c56ac7ebd0e",
+      "typeVersion": 1.1,
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -288,
+        -368
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "HTTP Request - Registrar en API Externa": {
+      "main": [
+        []
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Registrar en API Externa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "UuySmC8KQYgivEz7",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "d703fef4-5dae-4e72-9d34-77d3c863ae16",
+  "meta": {
+    "instanceId": "1a29cf9edfb0dc8c57b8b3cde76958d2a1d8641c69707ebd7653253da4d3d62d"
+  },
+  "nodeGroups": [],
+  "id": "OnPphkRzJ1s9gJUz",
+  "tags": []
+}

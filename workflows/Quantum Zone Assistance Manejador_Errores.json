@@ -1,0 +1,113 @@
+{
+  "name": "Quantum Zone Assistance Manejador_Errores",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0ede183e-d657-471b-9dc2-096ebe86cae3",
+      "name": "Error Trigger"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "err_msg_1",
+              "name": "Alerta_Fallo",
+              "value": "🚨 Alerta técnica en el sistema Quantum Zone Assistens",
+              "type": "string"
+            },
+            {
+              "id": "err_msg_2",
+              "name": "Nodo_Causante",
+              "value": "={{ $json.execution.error.message }}",
+              "type": "string"
+            },
+            {
+              "id": "err_msg_3",
+              "name": "Detalle_Error",
+              "value": "={{ $json.execution.error.message }}",
+              "type": "string"
+            },
+            {
+              "id": "err_msg_4",
+              "name": "ID_Ejecucion",
+              "value": "={{ $json.execution.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        240,
+        0
+      ],
+      "id": "94ca0931-5929-4f72-a0c7-bcfeabf09bae",
+      "name": "Estructurar Reporte"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://webhook.site",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"resumen\": \"{{ $json.Alerta_Fallo }}\",\n  \"nodo\": \"{{ $json.Nodo_Causante }}\",\n  \"error\": \"{{ $json.Detalle_Error }}\",\n  \"id_ejecucion\": {{ $json.ID_Ejecucion }}\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        0
+      ],
+      "id": "314bdd23-ca1f-4166-a149-cc64ee241c20",
+      "name": "HTTP Request - Notificar Administrador"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Estructurar Reporte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estructurar Reporte": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request - Notificar Administrador",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "a99b9999-0229-4f2c-b45e-0fa6eeb1c43d",
+  "meta": {
+    "instanceId": "1a29cf9edfb0dc8c57b8b3cde76958d2a1d8641c69707ebd7653253da4d3d62d"
+  },
+  "nodeGroups": [],
+  "id": "UuySmC8KQYgivEz7",
+  "tags": []
+}
